@@ -15,7 +15,7 @@ from subprocess import Popen,PIPE
 
 def generate(env):
     # invoke matlab
-    proc = Popen('matlab', stdin=PIPE, stdout=PIPE)
+    proc = Popen(['matlab', '-nosplash'], stdin=PIPE, stdout=PIPE)
 
     # get mex extension, matlab installation root and Matlab arch
     os.write(proc.stdin.fileno(), "mexext\n")
