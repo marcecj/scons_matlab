@@ -7,25 +7,24 @@
 # and sets various variables of the build environment. To do that, it starts a
 # Matlab subprocess, issues a few commands, and parses the result.
 #
+# NOTE: This only works on Unix, as Matlab under Windows doesn't work with pipes
+#
 # TODO: find out if results can be cached
 
-import os
-import re
-from subprocess import Popen,PIPE
+import os, re
+from subprocess import Popen, PIPE
 
 def generate(env):
     # invoke matlab
     proc = Popen(['matlab', '-nosplash'], stdin=PIPE, stdout=PIPE)
 
     # get mex extension, matlab installation root and Matlab arch
-    os.write(proc.stdin.fileno(), "mexext\n")
-    os.write(proc.stdin.fileno(), "matlabroot\n")
-    os.write(proc.stdin.fileno(), "getenv('MATLAB_ARCH')\n")
-    os.write(proc.stdin.fileno(), "quit\n")
+    stdout, stderr = proc.communicate('\n'.join( ['mexext', 'matlabroot',
+        "getenv('MATLAB_ARCH')", 'quit']))
 
-    # get lines not starting with space or newline
-    pat   = re.compile("^\s+.*$")
-    lines = [l for l in proc.stdout.readlines() if not pat.findall(l)]
+    # get lines not starting with space or newline, and empty lines
+    pat   = re.compile("^(\s+.*)*$")
+    lines = [l for l in stdout.split('\n') if not pat.findall(l)]
 
     # return value is every 3 lines: prompt, 'ans =', and then the actual answer
     matlab_root = lines[4].rstrip('\n')
