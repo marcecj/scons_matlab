@@ -1,3 +1,5 @@
+from __future__ import with_statement # with statement in Python 2.5
+
 # matlab.py:  Matlab extension builder
 # 
 # by Marc Joliet, marcec@gmx.de, 2010.04.22
@@ -17,41 +19,55 @@ def generate(env, **kwargs):
     # determine if the env is supposed to be a mex extension, default to False
     is_mex_ext = kwargs.get('mex', False)
 
-    # invoke matlab, method of doing so taken from the mlabwrap setup.py
-    with tempfile.NamedTemporaryFile() as tmp_file:
-        # The usage of '10' as a newline char is needed because... maybe Python
-        # universal newlines translate to newlines Matlab doesn't like? I dunno, but
-        # in the Matlab command line '\n' works, but not in this script, even with
-        # escapes or as a raw string.
-        matlab_cmd = "fid = fopen('%s', 'wt');" % tmp_file.name + \
-                r"fprintf(fid, '%s%c%s%c%s%c', mexext, 10, matlabroot, 10, computer, 10);" + \
-                "fclose(fid);quit;"
-        if os.name == "nt":
-            matlab_cmd = '"' + matlab_cmd + '"'
-        cmd_line = ['matlab', '-nodesktop', '-nosplash', '-r', matlab_cmd]
+    tmp_file, tmp_file_name = tempfile.mkstemp()
+    # As per Python tempfile documentation, Windows doesn't support multiple
+    # processes accessing the same file, so close it immediately.
+    os.close(tmp_file)
 
-        try:
-            # output to pipe to suppress output on Unix
-            subp.check_call(cmd_line, stdout=subp.PIPE)
-        except (OSError, subp.CalledProcessError) as e:
-            # PEP 352 can't go ahead quickly enough, stupid args tuple. I want the
-            # message attribute back!
-            print >> sys.stderr, "Error:", ', '.join([repr(i) for i in e.args])
-            exit("Error calling Matlab!")
+    # Invoke matlab, method of doing so taken from the mlabwrap setup.py.  The
+    # usage of '10' as a newline char is needed because... maybe Python
+    # universal newlines translate to newlines Matlab doesn't like? I dunno, but
+    # in the Matlab command line '\n' works, but not in this script, even with
+    # escapes or as a raw string.
+    matlab_cmd = "fid = fopen('%s', 'wt');" % tmp_file_name + \
+            r"fprintf(fid, '%s%c%s%c%s%c', mexext, 10, matlabroot, 10, computer, 10);" + \
+            "fclose(fid);quit;"
+    cmd_line = ['matlab', '-nodesktop', '-nosplash', '-r', matlab_cmd]
+    if os.name == "nt":
+        matlab_cmd[-1] = '"' + matlab_cmd[-1] + '"'
+        matlab_cmd += ['-wait'] # stop Matlab from forking
 
-        # read lines from file and remove newline chars
-        lines = [l.strip('\n') for l in tmp_file.file.readlines()]
+    try:
+        # output to pipe to suppress output on Unix
+        subp.check_call(cmd_line, stdout=subp.PIPE)
+    except BaseException, e:
+        # PEP 352 can't go ahead quickly enough, stupid args tuple. I want the
+        # message attribute back!
+        print >> sys.stderr, "Error:", ', '.join([repr(i) for i in e.args])
+        os.remove(tmp_file_name)
+        exit("Error calling Matlab, exiting.")
+
+    # read lines from file and remove newline chars
+    with open(tmp_file_name) as tmp_file:
+        lines = [l.strip('\n') for l in tmp_file.readlines()]
+    os.remove(tmp_file_name)
 
     matlab_root = lines[1]
     matlab_arch = lines[2].lower()
+    if matlab_arch == 'pcwin':
+        matlab_arch = 'win32'
     env['MATLAB'] = {
             "MEX_EXT":  "." + lines[0],
             "ROOT":     matlab_root,
             "ARCH":     matlab_arch,
-            "SRC":      ''.join([matlab_root, os.sep, 'extern', os.sep, 'src']),
-            "INCLUDE":  ''.join([matlab_root, os.sep, 'extern', os.sep, 'include']),
-            "LIB_DIR":  ''.join([matlab_root, os.sep, 'bin', os.sep, matlab_arch])
+            "SRC":      os.sep.join([matlab_root, 'extern', 'src']),
+            "INCLUDE":  os.sep.join([matlab_root, 'extern', 'include']),
+            "LIB_DIR":  [os.sep.join([matlab_root, 'bin', matlab_arch])]
             }
+    if matlab_arch == 'pcwin':
+        env['MATLAB']['LIB_DIR'] += [os.sep.join(
+            [matlab_root, 'extern', 'lib', 'win32', 'microsoft'])]
+
     env.Append(CPPPATH = [env['MATLAB']['INCLUDE']],
             LIBPATH = [env['MATLAB']['LIB_DIR']])
 
