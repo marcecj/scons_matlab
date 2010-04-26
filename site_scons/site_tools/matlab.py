@@ -8,7 +8,7 @@
 # Matlab subprocess that issues a few commands that print to a file, and parses
 # the file.
 #
-# TODO: find out if results can be cached. as a workaround, use interactive mode
+# TODO: Find out if results can be cached. As a workaround, use interactive mode
 # and use the "build" command (short form "b").
 
 import os, tempfile, subprocess as subp, sys
@@ -34,7 +34,7 @@ def generate(env, **kwargs):
             # output to pipe to suppress output on Unix
             subp.check_call(cmd_line, stdout=subp.PIPE)
         except (OSError, subp.CalledProcessError) as e:
-            # PEP 352 can't go ahead quick enough, stupid args tupel. I want the
+            # PEP 352 can't go ahead quickly enough, stupid args tuple. I want the
             # message attribute back!
             print >> sys.stderr, "Error:", ', '.join([repr(i) for i in e.args])
             exit("Error calling Matlab!")
@@ -60,7 +60,7 @@ def generate(env, **kwargs):
         env.Append(CPPDEFINES=["MATLAB_MEX_FILE"])
 
 def exists(env):
-    # FIXME: why is this function not called? Calling exit() here does nothing!
+    # FIXME: Why is this function not called? Calling exit() here does nothing!
     if not env.WhereIs("matlab"):
         return False
     return True
