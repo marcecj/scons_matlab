@@ -34,8 +34,8 @@ def generate(env, **kwargs):
             "fclose(fid);quit;"
     cmd_line = ['matlab', '-nodesktop', '-nosplash', '-r', matlab_cmd]
     if os.name == "nt":
-        matlab_cmd[-1] = '"' + matlab_cmd[-1] + '"'
-        matlab_cmd += ['-wait'] # stop Matlab from forking
+        cmd_line[-1] = '"' + cmd_line[-1] + '"'
+        cmd_line += ['-wait'] # stop Matlab from forking
 
     try:
         # output to pipe to suppress output on Unix
@@ -64,7 +64,7 @@ def generate(env, **kwargs):
             "INCLUDE":  os.sep.join([matlab_root, 'extern', 'include']),
             "LIB_DIR":  [os.sep.join([matlab_root, 'bin', matlab_arch])]
             }
-    if matlab_arch == 'pcwin':
+    if matlab_arch == 'win32':
         env['MATLAB']['LIB_DIR'] += [os.sep.join(
             [matlab_root, 'extern', 'lib', 'win32', 'microsoft'])]
 
