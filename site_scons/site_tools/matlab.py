@@ -30,7 +30,7 @@ def generate(env, **kwargs):
     # in the Matlab command line '\n' works, but not in this script, even with
     # escapes or as a raw string.
     matlab_cmd = "fid = fopen('%s', 'wt');" % tmp_file_name + \
-            r"fprintf(fid, '%s%c%s%c%s%c', mexext, 10, matlabroot, 10, computer, 10);" + \
+            r"fprintf(fid, '%s%c%s%c%s%c', mexext, 10, matlabroot, 10, computer, 10, version, 10);" + \
             "fclose(fid);quit;"
     cmd_line = ['matlab', '-nodesktop', '-nosplash', '-r', matlab_cmd]
     if os.name == "nt":
@@ -54,12 +54,15 @@ def generate(env, **kwargs):
 
     matlab_root = lines[1]
     matlab_arch = lines[2].lower()
+    matlab_ver, matlab_release  = lines[3].split()
     if matlab_arch == 'pcwin':
         matlab_arch = 'win32'
     env['MATLAB'] = {
             "MEX_EXT":  "." + lines[0],
             "ROOT":     matlab_root,
             "ARCH":     matlab_arch,
+            "VERSION":  matlab_ver,
+            "RELEASE":  matlab_release.lstrip('(').rstrip(')'),
             "SRC":      os.sep.join([matlab_root, 'extern', 'src']),
             "INCLUDE":  os.sep.join([matlab_root, 'extern', 'include']),
             "LIB_DIR":  [os.sep.join([matlab_root, 'bin', matlab_arch])]
