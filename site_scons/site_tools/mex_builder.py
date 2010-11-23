@@ -10,9 +10,6 @@ from __future__ import with_statement # with statement in Python 2.5
 # Matlab subprocess that issues a few commands that print to a file, and parses
 # the file.  Furthermore, it adds a pseudo-builder method to the environment
 # that wraps the SharedLibrary builder.
-#
-# TODO: Find out if results can be cached. As a workaround, use interactive mode
-# and use the "build" command (short form "b").
 
 import os, tempfile, subprocess as subp, sys, pickle
 
