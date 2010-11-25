@@ -1,7 +1,7 @@
 from __future__ import with_statement # with statement in Python 2.5
 
 # mex_builder.py:  Matlab extension builder
-# 
+#
 # by Marc Joliet, marcec@gmx.de, 2010.04.22
 # (loosely based on mex.py by Joe VanAndel, vanandel@ucar.edu, 2010/1/15)
 #
