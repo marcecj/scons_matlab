@@ -149,7 +149,7 @@ def mex_builder(env, target, source, only_deps=False, make_def=True):
     if platform == "posix":
         # add "exceptions" option, without which any mex function that raises an
         # exception (e.g., mexErrMsgTxt()) causes Matlab to crash
-        env.Append(CCFLAGS="-fexceptions -pthread")
+        env.Append(CCFLAGS=["-fexceptions", "-pthread"])
 
         # the need for mexversion.c was removed in Matlab version 7.9
         if env['MATLAB']['RELEASE'] < "R2009a":
