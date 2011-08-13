@@ -41,6 +41,7 @@ def cache_matlab_vars(matlab_vars):
 def gen_matlab_env(env, **kwargs):
     """Obtain various Matlab specific variables and put them in env['MATLAB'].
     """
+
     # determine if the env is supposed to be a mex extension, default to False
     is_mex_ext = kwargs.get('mex', False)
 
