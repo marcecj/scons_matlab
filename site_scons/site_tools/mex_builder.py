@@ -184,7 +184,7 @@ def generate(env, **kwargs):
     gen_matlab_env(env, mex=kwargs.get('mex', False))
 
     # defines a pseudo-builder that internally calls the SharedLibrary builder
-    env.AddMethod(mex_builder, "MexExtension")
+    env.AddMethod(mex_builder, "Mex")
 
 def exists(env):
     # FIXME: Why is this function not called? Calling exit() here does nothing!
