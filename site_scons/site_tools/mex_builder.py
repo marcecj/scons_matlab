@@ -42,9 +42,6 @@ def gen_matlab_env(env, **kwargs):
     """Obtain various Matlab specific variables and put them in env['MATLAB'].
     """
 
-    # determine if the env is supposed to be a mex extension, default to False
-    is_mex_ext = kwargs.get('mex', False)
-
     if not os.path.isfile(vars_file):
         tmp_file, tmp_file_name = tempfile.mkstemp()
         # As per Python tempfile documentation, Windows doesn't support multiple
@@ -111,10 +108,6 @@ def gen_matlab_env(env, **kwargs):
     env.Append(CPPPATH = [env['MATLAB']['INCLUDE']],
             LIBPATH = [env['MATLAB']['LIB_DIR']])
 
-    if is_mex_ext:
-        env.Replace(SHLIBPREFIX="", SHLIBSUFFIX=env['MATLAB']['MEX_EXT'])
-        env.Append(CPPDEFINES=["MATLAB_MEX_FILE"])
-
 def mex_builder(env, target, source, only_deps=False, make_def=True):
     """A Mex pseudo-builder for SCons that wraps the SharedLibrary builder.
 
@@ -173,10 +166,14 @@ def mex_builder(env, target, source, only_deps=False, make_def=True):
     else:
         exit("Oops, not a supported platform.")
 
+    env.Append(CPPDEFINES=["MATLAB_MEX_FILE"])
+
     # add compile target: return the node object (or None, if only the deps are
     # requested)
     if not only_deps:
-        return env.SharedLibrary(target, source)
+        return env.SharedLibrary(target, source,
+                                 SHLIBPREFIX="",
+                                 SHLIBSUFFIX=env['MATLAB']['MEX_EXT'])
     else:
         return None
 
