@@ -9,10 +9,10 @@ Introduction
 Mex extensions and programs that call to the Matlab engine.  It adds a 'MATLAB'
 dict to your build systems env that contains potentially interesting
 information, e.g., you can get Matlabs library directory via
-env["MATLAB"]["LIB_DIR"].  More importantly, it defines a MexExtension()
-pseudo-builder that wraps the SharedLibrary builder.
+env["MATLAB"]["LIB_DIR"].  More importantly, it defines a Mex() pseudo-builder
+that wraps the SharedLibrary builder.
 
-The MexExtension() pseudo-builder takes care of the following:
+The Mex() pseudo-builder takes care of the following:
 - adding necessary compiler options
 - adding the minimal set of necessary linker options (see Usage below)
 - automatically adding `mexversion.c` to the source file list (for older Matlab
@@ -38,32 +38,28 @@ Use this as you would any other SCons extension: add it to the `tools` argument
 of Environment(), for example:
 
 ------------------
-env = Environment(tools = ['default', ('mex_builder', {'mex': True})])
+env = Environment(tools = ['default', 'mex_builder'])
 ------------------
 
-Set the option "mex" when you are building a Mex extension.  If it is left unset
-or set to `False`, the only difference is that the environment settings relevant
-to shared libraries (e.g., `SHLIBPREFIX`) are left unmodified.
-
-To compile a Mex source file, use the method MexExtension(), like so:
+To compile a Mex source file, use the method Mex(), like so:
 
 ------------------
-mex_ext = env.MexExtension("mex_ext", ["mex_ext.c"])
+mex_ext = env.Mex("mex_ext", ["mex_ext.c"])
 ------------------
 
-MexExtension() takes care of adding necessary compiler options (e.g.,
-`-fexception`) and linker options (e.g., `-lmx`).
+Mex() takes care of adding necessary compiler options (e.g., `-fexception`) and
+linker options (e.g., `-lmx`).
 
-NOTE: MexExtension() intends to only do the minimal amount of necessary work,
-that is, it does not do things that are unnecessary for a minimal Mex file.  For
-instance, it links to the smallest possible set of libraries (i.e., mex and mx).
+NOTE: Mex() intends to only do the minimal amount of necessary work, that is, it
+does not do things that are unnecessary for a minimal Mex file.  For instance,
+it links to the smallest possible set of libraries (i.e., mex and mx).
 Therefor, if you use Matlab libraries other than mx and mex, you need to link to
 them yourself.
 
-MexExtension() also has an optional argument `only_deps`, which omits the shared
-library, but still does everything else.  This is intended for creating IDE
-project files.  For example, to build a MS Visual Studio solution file, you could
-do the following:
+Mex() also has an optional argument `only_deps`, which omits the shared library,
+but still does everything else.  This is intended for creating IDE project
+files.  For example, to build a MS Visual Studio solution file, you could do the
+following:
 
 ------------------
 msvs_variant = "Release"
