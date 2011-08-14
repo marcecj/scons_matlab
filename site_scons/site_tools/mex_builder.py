@@ -105,9 +105,6 @@ def gen_matlab_env(env, **kwargs):
         print "Loading Matlab vars from cache..."
         load_matlab_vars(env)
 
-    env.Append(CPPPATH = [env['MATLAB']['INCLUDE']],
-            LIBPATH = [env['MATLAB']['LIB_DIR']])
-
 def mex_builder(env, target, source, only_deps=False, make_def=True):
     """A Mex pseudo-builder for SCons that wraps the SharedLibrary builder.
 
@@ -166,7 +163,9 @@ def mex_builder(env, target, source, only_deps=False, make_def=True):
     else:
         exit("Oops, not a supported platform.")
 
-    env.Append(CPPDEFINES=["MATLAB_MEX_FILE"])
+    env.Append(CPPDEFINES = ["MATLAB_MEX_FILE"],
+               CPPPATH    = [env['MATLAB']['INCLUDE']],
+               LIBPATH    = [env['MATLAB']['LIB_DIR']])
 
     # add compile target: return the node object (or None, if only the deps are
     # requested)
