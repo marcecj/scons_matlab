@@ -60,7 +60,9 @@ def gen_matlab_env(env, **kwargs):
     matlab_cmd = "fid = fopen('%s', 'wt');" % tmp_file_name + \
             r"fprintf(fid, '%s%c%s%c%s%c', mexext, 10, matlabroot, 10, computer, 10, version, 10);" + \
             "fclose(fid);quit;"
+
     cmd_line = ['matlab', '-nodesktop', '-nosplash', '-r', matlab_cmd]
+
     if os.name == "nt":
         cmd_line[-1] = '"' + cmd_line[-1] + '"'
         cmd_line += ['-wait'] # stop Matlab from forking
@@ -83,6 +85,7 @@ def gen_matlab_env(env, **kwargs):
     matlab_root = lines[1]
     matlab_arch = lines[2].lower()
     matlab_ver, matlab_release  = lines[3].split()
+
     if matlab_arch == 'pcwin':
         matlab_arch = 'win32'
 
