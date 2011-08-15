@@ -1,0 +1,4 @@
+- Test under Windows (especially MS VS project generation)
+- Test under Mac
+- See if there is a solution to getting the info from Matlab without using a
+  temporary file.
