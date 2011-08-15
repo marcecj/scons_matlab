@@ -18,18 +18,16 @@ The Mex() pseudo-builder takes care of the following:
 - automatically adding `mexversion.c` to the source file list (for older Matlab
   versions).
 
-Prerequisites
-~~~~~~~~~~~~~
+Installation
+------------
 
-matlab.py depends on
+`matlab.py` depends on
 - Python (2.5 or newer)
 - SCons (obviously)
 - Matlab (the earliest version I tested with is R2007a)
 
-Installation
-------------
-
-Copy the file site_scons/site_tools/matlab.py to your site_scons directory.
+To install, copy the file `site_scons/site_tools/matlab.py` to your projects
+`site_scons/site_tools` directory.
 
 Usage
 -----
