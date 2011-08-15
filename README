@@ -1,13 +1,13 @@
-mex_builder.py - an SCons Tool for compiling Mex files
-======================================================
+An SCons Tool for Matlab
+========================
 Marc Joliet <marcec@gmx.de>
 
 Introduction
 ------------
 
-`mex_builder.py` is an SCons extension (more precisely, a tool) for compiling
-Mex extensions and programs that call to the Matlab engine.  It adds a 'MATLAB'
-dict to your build systems env that contains potentially interesting
+`matlab.py` is an SCons extension (more precisely, a tool) for compiling Mex
+extensions and programs that call to the Matlab engine.  It adds a 'MATLAB'
+`dict` to your build systems env that contains potentially interesting
 information, e.g., you can get Matlabs library directory via
 env["MATLAB"]["LIB_DIR"].  More importantly, it defines a Mex() pseudo-builder
 that wraps the SharedLibrary builder.
@@ -21,7 +21,7 @@ The Mex() pseudo-builder takes care of the following:
 Prerequisites
 ~~~~~~~~~~~~~
 
-mex_builder.py depends on
+matlab.py depends on
 - Python (2.5 or newer)
 - SCons (obviously)
 - Matlab (the earliest version I tested with is R2007a)
@@ -29,7 +29,7 @@ mex_builder.py depends on
 Installation
 ------------
 
-Copy the file site_scons/site_tools/mex_builder.py to your site_scons directory.
+Copy the file site_scons/site_tools/matlab.py to your site_scons directory.
 
 Usage
 -----
@@ -38,7 +38,7 @@ Use this as you would any other SCons extension: add it to the `tools` argument
 of Environment(), for example:
 
 ------------------
-env = Environment(tools = ['default', 'mex_builder'])
+env = Environment(tools = ['default', 'matlab'])
 ------------------
 
 To compile a Mex source file, use the method Mex(), like so:
@@ -56,16 +56,26 @@ it links to the smallest possible set of libraries (i.e., mex and mx).
 Therefor, if you use Matlab libraries other than mx and mex, you need to link to
 them yourself.
 
+NOTE: On first run, Matlab must be started.  The values stored in
+`env['MATLAB']` are static per Matlab installation, and are cached.  If you
+change your Matlab installation, you can delete the file `.matlab_vars_cache` to
+update the information.
+
 Mex() also has an optional argument `only_deps`, which omits the shared library,
-but still does everything else.  This is intended for creating IDE project
+but still does everything else.  This is intended for when creating IDE project
 files.  For example, to build a MS Visual Studio solution file, you could do the
 following:
 
 ------------------
+mex_ext = env.Mex("mex_ext", ["mex_ext.c", "mex_ext.def"],
+                  only_deps=True)
+
 msvs_variant = "Release"
-mex_ext = env.MSVSProject("mex_ext" + env['MSVSPROJECTSUFFIX'],
+
+mex_ext_vs = env.MSVSProject("mex_ext" + env['MSVSPROJECTSUFFIX'],
                              ["mex_ext.c", "mex_ext.def"])
-MSVSSolution("MexExt", [mex_ext], msvs_variant)
+
+MSVSSolution("MexExt", [mex_ext_vs], msvs_variant)
 ------------------
 
 License
