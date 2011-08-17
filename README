@@ -26,8 +26,12 @@ Installation
 - SCons (obviously)
 - Matlab (the earliest version I tested with is R2007a)
 
-To install, copy the file `site_scons/site_tools/matlab.py` to your projects
-`site_scons/site_tools` directory.
+If you use git, installation is easy: you just add this repository as a git
+submodule in the `site_scons/site_tools` directory, e.g., in `matlab`.
+
+If you don't use git, copy the repository to your projects
+`site_scons/site_tools` directory into a subdirectory with a sensible name,
+e.g., in `matlab`.
 
 Usage
 -----
