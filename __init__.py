@@ -11,7 +11,11 @@ from __future__ import with_statement # with statement in Python 2.5
 # the file.  Furthermore, it adds a pseudo-builder method to the environment
 # that wraps the SharedLibrary builder.
 
-import os, tempfile, subprocess as subp, sys, pickle
+import os
+import tempfile
+import subprocess as subp
+import sys
+import pickle
 
 vars_file = '.matlab_vars_cache'
 
