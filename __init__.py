@@ -12,7 +12,6 @@ from __future__ import with_statement # with statement in Python 2.5
 # that wraps the SharedLibrary builder.
 
 import os
-import tempfile
 import subprocess as subp
 import sys
 import pickle
@@ -51,40 +50,40 @@ def gen_matlab_env(env, **kwargs):
         load_matlab_vars(env)
         return
 
-    tmp_file, tmp_file_name = tempfile.mkstemp()
-    # As per Python tempfile documentation, Windows doesn't support multiple
-    # processes accessing the same file, so close it immediately.
-    os.close(tmp_file)
-
     # Invoke matlab, method of doing so taken from the mlabwrap setup.py.  The
     # usage of '10' as a newline char is needed because... maybe Python
     # universal newlines translate to newlines Matlab doesn't like? I dunno, but
     # in the Matlab command line '\n' works, but not in this script, even with
     # escapes or as a raw string.
-    matlab_cmd = "fid = fopen('%s', 'wt');" % tmp_file_name + \
-            r"fprintf(fid, '%s%c%s%c%s%c', mexext, 10, matlabroot, 10, computer, 10, version, 10);" + \
-            "fclose(fid);quit;"
+    matlab_cmd = r"fprintf(1, '%s%c%s%c%s%c', mexext, 10, matlabroot, 10, computer, 10, version, 10); quit;"
 
-    cmd_line = ['matlab', '-nodesktop', '-nosplash', '-r', matlab_cmd]
+    cmd_line = ['matlab', '-nodesktop', '-nosplash']
 
     if os.name == "nt":
-        cmd_line[-1] = '"' + cmd_line[-1] + '"'
         cmd_line += ['-wait'] # stop Matlab from forking
 
     try:
-        # output to pipe to suppress output on Unix
-        subp.check_call(cmd_line, stdout=subp.PIPE)
+        # open a Matlab subprocess that communicates over pipes
+        matlab_proc = subp.Popen(cmd_line, stdin=subp.PIPE, stdout=subp.PIPE)
+
+        # capture Matlabs stdout
+        out = matlab_proc.communicate(matlab_cmd)[0]
+
     except BaseException, e:
+
         # PEP 352 can't go ahead quickly enough, stupid args tuple. I want the
         # message attribute back!
         print >> sys.stderr, "Error:", ', '.join([repr(i) for i in e.args])
-        os.remove(tmp_file_name)
+
         exit("Error calling Matlab, exiting.")
 
-    # read lines from file and remove newline chars
-    with open(tmp_file_name) as tmp_file:
-        lines = [l.strip('\n') for l in tmp_file.readlines()]
-        os.remove(tmp_file_name)
+    # everything before the first input line can be ignored
+    # NOTE: I'm not sure, but I think you can't change the '>>' string, so this
+    # should be reliable
+    out = out.split('>>')[-1].split('\n')
+
+    # save non-empty lines from stdout and strip surrounding whitespace
+    lines = [l.strip() for l in out if len(l)>0]
 
     matlab_root = lines[1]
     matlab_arch = lines[2].lower()
