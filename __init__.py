@@ -19,6 +19,7 @@ import pickle
 # Windows only: catches Matlabs output, since you cannot print to stdout
 matlab_log_file = '.matlab_output'
 
+# caches the Matlab variables
 vars_file = '.matlab_vars_cache'
 
 def load_matlab_vars(env):
