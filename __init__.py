@@ -134,23 +134,12 @@ def mex_builder(env, target, source):
     else:
         env.Append(LIBS = ["mex", "mx"])
 
-    # this tells SCons where to find mexversion.c
-    env.Repository(env["MATLAB"]["SRC"])
-
     # OS dependent stuff, we assume GCC on Unix like platforms
     if platform == "posix":
         # add "exceptions" option, without which any mex function that raises an
         # exception (e.g., mexErrMsgTxt()) causes Matlab to crash
         env.Append(CCFLAGS=["-fexceptions", "-pthread"])
 
-        # the need for mexversion.c was removed in Matlab version 7.9
-        if env['MATLAB']['RELEASE'] < "R2009a":
-            mexversion = env.Clone()
-            # give each Mex file its own mexversion object (prevents warnings
-            # from SCons and makes sure the same compiler options are used)
-            mexversion_obj = mexversion.SharedObject("mexversion_"+target,
-                                                     "mexversion.c")
-            source.append(mexversion_obj)
     elif platform == "win32":
         env.Append(WINDOWS_INSERT_MANIFEST = True)
         # def_file = env.Textfile(target+".def", \
@@ -158,10 +147,28 @@ def mex_builder(env, target, source):
         #             "EXPORTS mexFunction"])
 
         env.Replace(WINDOWS_INSERT_DEF = True)
+
     elif platform == "darwin":
         env.Append(CCFLAGS="-fexceptions -pthread")
     else:
         exit("Oops, not a supported platform.")
+
+    # the need for mexversion.c was removed in Matlab version 7.9
+    if env['MATLAB']['RELEASE'] < "R2009a":
+        mexversion = env.Clone()
+        # give each Mex file its own mexversion object (prevents warnings
+        # from SCons and makes sure the same compiler options are used)
+
+        if os.name == 'nt':
+            mexversion_obj = mexversion.RES("mexversion_" + target,
+                                            os.sep.join([env['MATLAB']['INCLUDE'],
+                                                        "mexversion.rc"]))
+        else:
+            mexversion_obj = mexversion.SharedObject("mexversion_" + target,
+                                                     os.sep.join([env["MATLAB"]["SRC"],
+                                                         "mexversion.c"]))
+
+        source.append(mexversion_obj)
 
     env.Append(CPPDEFINES = ["MATLAB_MEX_FILE"],
                CPPPATH    = [env['MATLAB']['INCLUDE']],
