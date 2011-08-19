@@ -136,6 +136,7 @@ def mex_builder(env, target, source):
 
     # OS dependent stuff, we assume GCC on Unix like platforms
     if platform == "posix":
+
         # add "exceptions" option, without which any mex function that raises an
         # exception (e.g., mexErrMsgTxt()) causes Matlab to crash
         env.Append(CCFLAGS=["-fexceptions", "-pthread"])
@@ -161,6 +162,7 @@ def mex_builder(env, target, source):
 
     # the need for mexversion.c was removed in Matlab version 7.9
     if env['MATLAB']['RELEASE'] < "R2009a":
+
         mexversion = env.Clone()
         # give each Mex file its own mexversion object (prevents warnings
         # from SCons and makes sure the same compiler options are used)
