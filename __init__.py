@@ -141,11 +141,18 @@ def mex_builder(env, target, source):
         env.Append(CCFLAGS=["-fexceptions", "-pthread"])
 
     elif platform == "win32":
-        # def_file = env.Textfile(target+".def", \
-        #     source=["LIBRARY " + [s for s in source if target in s],
-        #             "EXPORTS mexFunction"])
 
         env.Replace(WINDOWS_INSERT_DEF = True)
+
+        # add the Textfile builder to the build environment
+        env.Tool('textfile')
+
+        # automatically generate a .def file, since only one function will be
+        # exported anyway
+        env.Textfile(target, \
+                    source=["LIBRARY " + [s for s in source if target in s][0],
+                            "EXPORTS mexFunction"],
+                    TEXTFILESUFFIX='.def')
 
     elif platform == "darwin":
         env.Append(CCFLAGS="-fexceptions -pthread")
