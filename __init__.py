@@ -32,10 +32,6 @@ def cache_matlab_vars(matlab_vars):
     module.
     """
 
-    # create the file if it doesn't exist
-    if not os.path.isfile(vars_file):
-        os.mknod(vars_file)
-
     # store the objects in a file
     with open(vars_file, 'w') as f:
         p = pickle.Pickler(f)
