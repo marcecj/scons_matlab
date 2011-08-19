@@ -115,23 +115,14 @@ def gen_matlab_env(env, **kwargs):
     print "Caching Matlab vars..."
     cache_matlab_vars(env['MATLAB'])
 
-def mex_builder(env, target, source, only_deps=False, make_def=True):
+def mex_builder(env, target, source):
     """A Mex pseudo-builder for SCons that wraps the SharedLibrary builder.
 
        This pseudo-builder merely inserts some library dependencies, source file
        dependencies and the compiler expected by Matlab.  We don't return the
        targets and sources, since they only change on Unix, where we don't do
        anything but build anyway.
-
-       The only_deps option is for Windows, where a MSVS Solution file might be
-       wanted, in which case only the dependencies are added to the environment.
        """
-
-    # don't touch the original environment unless the dependencies are wanted;
-    # this is supposed to prevent unwanted side effects (compiler options) when
-    # adding Mex programs to existing environments
-    if not only_deps:
-        env = env.Clone()
 
     source   = list(source)
     platform = env['PLATFORM']
@@ -178,12 +169,9 @@ def mex_builder(env, target, source, only_deps=False, make_def=True):
 
     # add compile target: return the node object (or None, if only the deps are
     # requested)
-    if not only_deps:
-        return env.SharedLibrary(target, source,
-                                 SHLIBPREFIX="",
-                                 SHLIBSUFFIX=env['MATLAB']['MEX_EXT'])
-    else:
-        return None
+    return env.SharedLibrary(target, source,
+                             SHLIBPREFIX="",
+                             SHLIBSUFFIX=env['MATLAB']['MEX_EXT'])
 
 def generate(env, **kwargs):
     gen_matlab_env(env, mex=kwargs.get('mex', False))
