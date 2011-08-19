@@ -141,7 +141,6 @@ def mex_builder(env, target, source):
         env.Append(CCFLAGS=["-fexceptions", "-pthread"])
 
     elif platform == "win32":
-        env.Append(WINDOWS_INSERT_MANIFEST = True)
         # def_file = env.Textfile(target+".def", \
         #     source=["LIBRARY " + [s for s in source if target in s],
         #             "EXPORTS mexFunction"])
