@@ -185,7 +185,7 @@ def mex_builder(env, target, source, only_deps=False, make_def=True):
         return None
 
 def generate(env, **kwargs):
-    gen_matlab_env(env, mex=kwargs.get('mex', False))
+    gen_matlab_env(env)
 
     # defines a pseudo-builder that internally calls the SharedLibrary builder
     env.AddMethod(mex_builder, "Mex")
