@@ -60,7 +60,7 @@ def gen_matlab_env(env, **kwargs):
     cmd_line = ['matlab', '-nodesktop', '-nosplash']
 
     if os.name == "nt":
-        cmd_line += ['-r', '"' + matlab_cmd + '"'])
+        cmd_line += ['-r', '"' + matlab_cmd + '"']
         # stop Matlab from forking and output to a log file
         cmd_line += ['-wait', '-logfile', matlab_log_file]
 
