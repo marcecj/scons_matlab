@@ -63,7 +63,7 @@ def gen_matlab_env(env, **kwargs):
         matlab_proc = subp.Popen(cmd_line, stdin=subp.PIPE, stdout=subp.PIPE)
 
         # capture Matlabs stdout
-        out = matlab_proc.communicate(matlab_cmd)[0]
+        mlab_out = matlab_proc.communicate(matlab_cmd)[0]
 
     except BaseException, e:
 
@@ -76,10 +76,10 @@ def gen_matlab_env(env, **kwargs):
     # everything before the first input line can be ignored
     # NOTE: I'm not sure, but I think you can't change the '>>' string, so this
     # should be reliable
-    out = out.split('>>')[-1].split('\n')
+    mlab_out = mlab_out.split('>>')[-1].split('\n')
 
     # save non-empty lines from stdout and strip surrounding whitespace
-    lines = [l.strip() for l in out if len(l)>0]
+    lines = [l.strip() for l in mlab_out if len(l)>0]
 
     matlab_root = lines[1]
     matlab_arch = lines[2].lower()
