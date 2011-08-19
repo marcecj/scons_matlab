@@ -63,23 +63,6 @@ NOTE: On first run, Matlab must be started.  The values stored in
 change your Matlab installation, you can delete the file `.matlab_vars_cache` to
 update the information.
 
-Mex() also has an optional argument `only_deps`, which omits the shared library,
-but still does everything else.  This is intended for when creating IDE project
-files.  For example, to build a MS Visual Studio solution file, you could do the
-following:
-
-------------------
-mex_ext = env.Mex("mex_ext", ["mex_ext.c", "mex_ext.def"],
-                  only_deps=True)
-
-msvs_variant = "Release"
-
-mex_ext_vs = env.MSVSProject("mex_ext" + env['MSVSPROJECTSUFFIX'],
-                             ["mex_ext.c", "mex_ext.def"])
-
-MSVSSolution("MexExt", [mex_ext_vs], msvs_variant)
-------------------
-
 License
 -------
 
