@@ -111,8 +111,6 @@ def gen_matlab_env(env, **kwargs):
     if matlab_arch == 'win32':
         env['MATLAB']['LIB_DIR'] += \
                 [os.sep.join([matlab_root, 'extern', 'lib', 'win32', 'microsoft'])]
-        # TODO: test WINDOWS_INSERT_DEF option
-        # env.Replace(WINDOWS_INSERT_DEF=True)
 
     print "Caching Matlab vars..."
     cache_matlab_vars(env['MATLAB'])
@@ -164,12 +162,11 @@ def mex_builder(env, target, source, only_deps=False, make_def=True):
             source.append(mexversion_obj)
     elif platform == "win32":
         env.Append(WINDOWS_INSERT_MANIFEST = True)
-        # TODO: test WINDOWS_INSERT_DEF option
         # def_file = env.Textfile(target+".def", \
         #     source=["LIBRARY " + [s for s in source if target in s],
         #             "EXPORTS mexFunction"])
 
-        # source += [def_file]
+        env.Replace(WINDOWS_INSERT_DEF = True)
     elif platform == "darwin":
         env.Append(CCFLAGS="-fexceptions -pthread")
     else:
