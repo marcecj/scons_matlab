@@ -16,6 +16,9 @@ import subprocess as subp
 import sys
 import pickle
 
+# Windows only: catches Matlabs output, since you cannot print to stdout
+matlab_log_file = '.matlab_output'
+
 vars_file = '.matlab_vars_cache'
 
 def load_matlab_vars(env):
@@ -56,7 +59,9 @@ def gen_matlab_env(env, **kwargs):
     cmd_line = ['matlab', '-nodesktop', '-nosplash']
 
     if os.name == "nt":
-        cmd_line += ['-wait'] # stop Matlab from forking
+        cmd_line += ['-r', '"' + matlab_cmd + '"'])
+        # stop Matlab from forking and output to a log file
+        cmd_line += ['-wait', '-logfile', matlab_log_file]
 
     try:
         # open a Matlab subprocess that communicates over pipes
@@ -73,10 +78,14 @@ def gen_matlab_env(env, **kwargs):
 
         exit("Error calling Matlab, exiting.")
 
-    # everything before the first input line can be ignored
-    # NOTE: I'm not sure, but I think you can't change the '>>' string, so this
-    # should be reliable
-    mlab_out = mlab_out.split('>>')[-1].split('\n')
+    if os.name == 'nt':
+        with open(matlab_log_file) as mlab_out:
+            mlab_out = mlab_out.readlines()[-4::]
+    else:
+        # everything before the first input line can be ignored
+        # NOTE: I'm not sure, but I think you can't change the '>>' string, so this
+        # should be reliable
+        mlab_out = mlab_out.split('>>')[-1].split('\n')
 
     # save non-empty lines from stdout and strip surrounding whitespace
     lines = [l.strip() for l in mlab_out if len(l)>0]
