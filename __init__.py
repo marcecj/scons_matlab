@@ -12,11 +12,14 @@ from __future__ import with_statement # with statement in Python 2.5
 # that wraps the SharedLibrary builder.
 
 import os
-import tempfile
 import subprocess as subp
 import sys
 import pickle
 
+# Windows only: catches Matlabs output, since you cannot print to stdout
+matlab_log_file = '.matlab_output'
+
+# caches the Matlab variables
 vars_file = '.matlab_vars_cache'
 
 def load_matlab_vars(env):
@@ -33,10 +36,6 @@ def cache_matlab_vars(matlab_vars):
     module.
     """
 
-    # create the file if it doesn't exist
-    if not os.path.isfile(vars_file):
-        os.mknod(vars_file)
-
     # store the objects in a file
     with open(vars_file, 'w') as f:
         p = pickle.Pickler(f)
@@ -51,40 +50,46 @@ def gen_matlab_env(env, **kwargs):
         load_matlab_vars(env)
         return
 
-    tmp_file, tmp_file_name = tempfile.mkstemp()
-    # As per Python tempfile documentation, Windows doesn't support multiple
-    # processes accessing the same file, so close it immediately.
-    os.close(tmp_file)
-
     # Invoke matlab, method of doing so taken from the mlabwrap setup.py.  The
     # usage of '10' as a newline char is needed because... maybe Python
     # universal newlines translate to newlines Matlab doesn't like? I dunno, but
     # in the Matlab command line '\n' works, but not in this script, even with
     # escapes or as a raw string.
-    matlab_cmd = "fid = fopen('%s', 'wt');" % tmp_file_name + \
-            r"fprintf(fid, '%s%c%s%c%s%c', mexext, 10, matlabroot, 10, computer, 10, version, 10);" + \
-            "fclose(fid);quit;"
+    matlab_cmd = r"fprintf(1, '%s%c%s%c%s%c', mexext, 10, matlabroot, 10, computer, 10, version, 10); quit;"
 
-    cmd_line = ['matlab', '-nodesktop', '-nosplash', '-r', matlab_cmd]
+    cmd_line = ['matlab', '-nodesktop', '-nosplash']
 
     if os.name == "nt":
-        cmd_line[-1] = '"' + cmd_line[-1] + '"'
-        cmd_line += ['-wait'] # stop Matlab from forking
+        cmd_line += ['-r', '"' + matlab_cmd + '"'])
+        # stop Matlab from forking and output to a log file
+        cmd_line += ['-wait', '-logfile', matlab_log_file]
 
     try:
-        # output to pipe to suppress output on Unix
-        subp.check_call(cmd_line, stdout=subp.PIPE)
+        # open a Matlab subprocess that communicates over pipes
+        matlab_proc = subp.Popen(cmd_line, stdin=subp.PIPE, stdout=subp.PIPE)
+
+        # capture Matlabs stdout
+        mlab_out = matlab_proc.communicate(matlab_cmd)[0]
+
     except BaseException, e:
+
         # PEP 352 can't go ahead quickly enough, stupid args tuple. I want the
         # message attribute back!
         print >> sys.stderr, "Error:", ', '.join([repr(i) for i in e.args])
-        os.remove(tmp_file_name)
+
         exit("Error calling Matlab, exiting.")
 
-    # read lines from file and remove newline chars
-    with open(tmp_file_name) as tmp_file:
-        lines = [l.strip('\n') for l in tmp_file.readlines()]
-        os.remove(tmp_file_name)
+    if os.name == 'nt':
+        with open(matlab_log_file) as mlab_out:
+            mlab_out = mlab_out.readlines()[-4::]
+    else:
+        # everything before the first input line can be ignored
+        # NOTE: I'm not sure, but I think you can't change the '>>' string, so this
+        # should be reliable
+        mlab_out = mlab_out.split('>>')[-1].split('\n')
+
+    # save non-empty lines from stdout and strip surrounding whitespace
+    lines = [l.strip() for l in mlab_out if len(l)>0]
 
     matlab_root = lines[1]
     matlab_arch = lines[2].lower()
@@ -107,29 +112,18 @@ def gen_matlab_env(env, **kwargs):
     if matlab_arch == 'win32':
         env['MATLAB']['LIB_DIR'] += \
                 [os.sep.join([matlab_root, 'extern', 'lib', 'win32', 'microsoft'])]
-        # TODO: test WINDOWS_INSERT_DEF option
-        # env.Replace(WINDOWS_INSERT_DEF=True)
 
     print "Caching Matlab vars..."
     cache_matlab_vars(env['MATLAB'])
 
-def mex_builder(env, target, source, only_deps=False, make_def=True):
+def mex_builder(env, target, source):
     """A Mex pseudo-builder for SCons that wraps the SharedLibrary builder.
 
        This pseudo-builder merely inserts some library dependencies, source file
        dependencies and the compiler expected by Matlab.  We don't return the
        targets and sources, since they only change on Unix, where we don't do
        anything but build anyway.
-
-       The only_deps option is for Windows, where a MSVS Solution file might be
-       wanted, in which case only the dependencies are added to the environment.
        """
-
-    # don't touch the original environment unless the dependencies are wanted;
-    # this is supposed to prevent unwanted side effects (compiler options) when
-    # adding Mex programs to existing environments
-    if not only_deps:
-        env = env.Clone()
 
     source   = list(source)
     platform = env['PLATFORM']
@@ -141,35 +135,49 @@ def mex_builder(env, target, source, only_deps=False, make_def=True):
     else:
         env.Append(LIBS = ["mex", "mx"])
 
-    # this tells SCons where to find mexversion.c
-    env.Repository(env["MATLAB"]["SRC"])
-
     # OS dependent stuff, we assume GCC on Unix like platforms
     if platform == "posix":
+
         # add "exceptions" option, without which any mex function that raises an
         # exception (e.g., mexErrMsgTxt()) causes Matlab to crash
         env.Append(CCFLAGS=["-fexceptions", "-pthread"])
 
-        # the need for mexversion.c was removed in Matlab version 7.9
-        if env['MATLAB']['RELEASE'] < "R2009a":
-            mexversion = env.Clone()
-            # give each Mex file its own mexversion object (prevents warnings
-            # from SCons and makes sure the same compiler options are used)
-            mexversion_obj = mexversion.SharedObject("mexversion_"+target,
-                                                     "mexversion.c")
-            source.append(mexversion_obj)
     elif platform == "win32":
-        env.Append(WINDOWS_INSERT_MANIFEST = True)
-        # TODO: test WINDOWS_INSERT_DEF option
-        # def_file = env.Textfile(target+".def", \
-        #     source=["LIBRARY " + [s for s in source if target in s],
-        #             "EXPORTS mexFunction"])
 
-        # source += [def_file]
+        env.Replace(WINDOWS_INSERT_DEF = True)
+
+        # add the Textfile builder to the build environment
+        env.Tool('textfile')
+
+        # automatically generate a .def file, since only one function will be
+        # exported anyway
+        env.Textfile(target, \
+                    source=["LIBRARY " + [s for s in source if target in s][0],
+                            "EXPORTS mexFunction"],
+                    TEXTFILESUFFIX='.def')
+
     elif platform == "darwin":
         env.Append(CCFLAGS="-fexceptions -pthread")
     else:
         exit("Oops, not a supported platform.")
+
+    # the need for mexversion.c was removed in Matlab version 7.9
+    if env['MATLAB']['RELEASE'] < "R2009a":
+
+        mexversion = env.Clone()
+        # give each Mex file its own mexversion object (prevents warnings
+        # from SCons and makes sure the same compiler options are used)
+
+        if os.name == 'nt':
+            mexversion_obj = mexversion.RES("mexversion_" + target,
+                                            os.sep.join([env['MATLAB']['INCLUDE'],
+                                                        "mexversion.rc"]))
+        else:
+            mexversion_obj = mexversion.SharedObject("mexversion_" + target,
+                                                     os.sep.join([env["MATLAB"]["SRC"],
+                                                         "mexversion.c"]))
+
+        source.append(mexversion_obj)
 
     env.Append(CPPDEFINES = ["MATLAB_MEX_FILE"],
                CPPPATH    = [env['MATLAB']['INCLUDE']],
@@ -177,12 +185,9 @@ def mex_builder(env, target, source, only_deps=False, make_def=True):
 
     # add compile target: return the node object (or None, if only the deps are
     # requested)
-    if not only_deps:
-        return env.SharedLibrary(target, source,
-                                 SHLIBPREFIX="",
-                                 SHLIBSUFFIX=env['MATLAB']['MEX_EXT'])
-    else:
-        return None
+    return env.SharedLibrary(target, source,
+                             SHLIBPREFIX="",
+                             SHLIBSUFFIX=env['MATLAB']['MEX_EXT'])
 
 def generate(env, **kwargs):
     gen_matlab_env(env)
