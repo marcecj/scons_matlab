@@ -116,7 +116,7 @@ def gen_matlab_env(env, **kwargs):
     print "Caching Matlab vars..."
     cache_matlab_vars(env['MATLAB'])
 
-def mex_builder(env, target, source):
+def mex_builder(env, target, source, gen_def=False):
     """A Mex pseudo-builder for SCons that wraps the SharedLibrary builder.
 
        This pseudo-builder merely inserts some library dependencies, source file
@@ -144,17 +144,17 @@ def mex_builder(env, target, source):
 
     elif platform == "win32":
 
-        env.Replace(WINDOWS_INSERT_DEF = True)
+        if gen_def:
+            env.Replace(WINDOWS_INSERT_DEF = True)
 
-        # add the Textfile builder to the build environment
-        env.Tool('textfile')
+            # add the Textfile builder to the build environment
+            env.Tool('textfile')
 
-        # automatically generate a .def file, since only one function will be
-        # exported anyway
-        env.Textfile(target, \
-                    source=["LIBRARY " + [s for s in source if target in s][0],
-                            "EXPORTS mexFunction"],
-                    TEXTFILESUFFIX='.def')
+            # generate a .def file
+            env.Textfile(target,
+                         source=["LIBRARY " + [s for s in source if target in s][0],
+                                 "EXPORTS mexFunction"],
+                         TEXTFILESUFFIX='.def')
 
     elif platform == "darwin":
         env.Append(CCFLAGS="-fexceptions -pthread")
@@ -190,7 +190,7 @@ def mex_builder(env, target, source):
                              SHLIBSUFFIX=env['MATLAB']['MEX_EXT'])
 
 def generate(env, **kwargs):
-    gen_matlab_env(env)
+    gen_matlab_env(env, **kwargs)
 
     # defines a pseudo-builder that internally calls the SharedLibrary builder
     env.AddMethod(mex_builder, "Mex")
