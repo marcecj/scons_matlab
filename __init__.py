@@ -116,7 +116,7 @@ def gen_matlab_env(env, **kwargs):
     print "Caching Matlab vars..."
     cache_matlab_vars(env['MATLAB'])
 
-def mex_builder(env, target, source, gen_def=False):
+def mex_builder(env, target, source, gen_def=False, **kwargs):
     """A Mex pseudo-builder for SCons that wraps the SharedLibrary builder.
 
        This pseudo-builder merely inserts some library dependencies, source file
@@ -187,7 +187,8 @@ def mex_builder(env, target, source, gen_def=False):
     # requested)
     return env.SharedLibrary(target, source,
                              SHLIBPREFIX="",
-                             SHLIBSUFFIX=env['MATLAB']['MEX_EXT'])
+                             SHLIBSUFFIX=env['MATLAB']['MEX_EXT'],
+                             **kwargs)
 
 def generate(env, **kwargs):
     gen_matlab_env(env, **kwargs)
