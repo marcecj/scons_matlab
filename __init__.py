@@ -131,16 +131,16 @@ def mex_builder(env, target, source, gen_def=False):
     # define operating system independent options and dependencies
     if platform == "win32":
         # Matlab doesn't follow the Windows standard and adds a 'lib' prefix anyway
-        env.Append(LIBS = ["libmex", "libmx"])
+        env.AppendUnique(LIBS = ["libmex", "libmx"])
     else:
-        env.Append(LIBS = ["mex", "mx"])
+        env.AppendUnique(LIBS = ["mex", "mx"])
 
     # OS dependent stuff, we assume GCC on Unix like platforms
     if platform == "posix":
 
         # add "exceptions" option, without which any mex function that raises an
         # exception (e.g., mexErrMsgTxt()) causes Matlab to crash
-        env.Append(CCFLAGS=["-fexceptions", "-pthread"])
+        env.AppendUnique(CCFLAGS=["-fexceptions", "-pthread"])
 
     elif platform == "win32":
 
@@ -157,7 +157,7 @@ def mex_builder(env, target, source, gen_def=False):
                          TEXTFILESUFFIX='.def')
 
     elif platform == "darwin":
-        env.Append(CCFLAGS="-fexceptions -pthread")
+        env.AppendUnique(CCFLAGS="-fexceptions -pthread")
     else:
         exit("Oops, not a supported platform.")
 
@@ -179,9 +179,9 @@ def mex_builder(env, target, source, gen_def=False):
 
         source.append(mexversion_obj)
 
-    env.Append(CPPDEFINES = ["MATLAB_MEX_FILE"],
-               CPPPATH    = [env['MATLAB']['INCLUDE']],
-               LIBPATH    = [env['MATLAB']['LIB_DIR']])
+    env.AppendUnique(CPPDEFINES = ["MATLAB_MEX_FILE"],
+                     CPPPATH    = [env['MATLAB']['INCLUDE']],
+                     LIBPATH    = [env['MATLAB']['LIB_DIR']])
 
     # add compile target: return the node object (or None, if only the deps are
     # requested)
