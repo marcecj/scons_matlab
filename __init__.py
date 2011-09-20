@@ -46,7 +46,8 @@ def gen_matlab_env(env, **kwargs):
     """
 
     if os.path.isfile(vars_file):
-        print "Loading Matlab vars from cache..."
+        if not env.GetOption('silent'):
+            print "Loading Matlab vars from cache..."
         load_matlab_vars(env)
         return
 
