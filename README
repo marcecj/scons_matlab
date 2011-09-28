@@ -5,23 +5,23 @@ Marc Joliet <marcec@gmx.de>
 Introduction
 ------------
 
-`matlab.py` is an SCons extension (more precisely, a tool) for compiling Mex
-extensions and programs that call to the Matlab engine.  It adds a 'MATLAB'
-`dict` to your build systems env that contains potentially interesting
-information, e.g., you can get Matlabs library directory via
-env["MATLAB"]["LIB_DIR"].  More importantly, it defines a Mex() pseudo-builder
-that wraps the SharedLibrary builder.
+This is an SCons extension (more precisely, a tool) for compiling Mex extensions
+and programs that call to the Matlab engine.  It adds a 'MATLAB' `dict` to your
+build systems env that contains potentially interesting information, e.g., you
+can get Matlabs library directory via env["MATLAB"]["LIB_DIR"].  More
+importantly, it defines a Mex() pseudo-builder that wraps the SharedLibrary
+builder.
 
 The Mex() pseudo-builder takes care of the following:
 - adding necessary compiler options
 - adding the minimal set of necessary linker options (see Usage below)
-- automatically adding `mexversion.c` to the source file list (for older Matlab
-  versions).
+- automatically adding `mexversion.c` (`mexversion.rc` on Windows) to the source
+  file list (for older Matlab versions).
 
 Installation
 ------------
 
-`matlab.py` depends on
+The SCons Matlab tool depends on
 - Python (2.5 or newer)
 - SCons (obviously)
 - Matlab (the earliest version I tested with is R2007a)
