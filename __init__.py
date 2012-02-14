@@ -51,12 +51,8 @@ def gen_matlab_env(env, **kwargs):
         load_matlab_vars(env)
         return
 
-    # Invoke matlab, method of doing so taken from the mlabwrap setup.py.  The
-    # usage of '10' as a newline char is needed because... maybe Python
-    # universal newlines translate to newlines Matlab doesn't like? I dunno, but
-    # in the Matlab command line '\n' works, but not in this script, even with
-    # escapes or as a raw string.
-    matlab_cmd = r"fprintf(1, '%s%c%s%c%s%c', mexext, 10, matlabroot, 10, computer, 10, version, 10); quit;"
+    # invoke matlab and print required information
+    matlab_cmd = r"fprintf(1, '%s\n%s\n%s\n', mexext, matlabroot, computer, version); quit;"
 
     cmd_line = ['matlab', '-nodesktop', '-nosplash']
 
