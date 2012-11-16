@@ -13,6 +13,7 @@ importantly, it defines a Mex() pseudo-builder that wraps the SharedLibrary
 builder.
 
 The Mex() pseudo-builder takes care of the following:
+
 - adding necessary compiler options
 - adding the minimal set of necessary linker options (see Usage below)
 - automatically adding `mexversion.c` (`mexversion.rc` on Windows) to the source
@@ -22,6 +23,7 @@ Installation
 ------------
 
 The SCons Matlab tool depends on
+
 - Python (2.5 or newer)
 - SCons (obviously)
 - Matlab (the earliest version I tested with is R2007a)
@@ -39,15 +41,11 @@ Usage
 Use this as you would any other SCons extension: add it to the `tools` argument
 of Environment(), for example:
 
-------------------
-env = Environment(tools = ['default', 'matlab'])
-------------------
+    env = Environment(tools = ['default', 'matlab'])
 
 To compile a Mex source file, use the method Mex(), like so:
 
-------------------
-mex_ext = env.Mex("mex_ext", ["mex_ext.c"])
-------------------
+    mex_ext = env.Mex("mex_ext", ["mex_ext.c"])
 
 Mex() takes care of adding necessary compiler options (e.g., `-fexception`) and
 linker options (e.g., `-lmx`).
