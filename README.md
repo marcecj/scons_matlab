@@ -8,11 +8,11 @@ Introduction
 This is an SCons extension (more precisely, a tool) for compiling Mex extensions
 and programs that call to the Matlab engine.  It adds a 'MATLAB' `dict` to your
 build systems env that contains potentially interesting information, e.g., you
-can get Matlabs library directory via env["MATLAB"]["LIB_DIR"].  More
-importantly, it defines a Mex() pseudo-builder that wraps the SharedLibrary
+can get Matlabs library directory via `env["MATLAB"]["LIB_DIR"]`.  More
+importantly, it defines a `Mex()` pseudo-builder that wraps the `SharedLibrary`
 builder.
 
-The Mex() pseudo-builder takes care of the following:
+The `Mex()` pseudo-builder takes care of the following:
 
 - adding necessary compiler options
 - adding the minimal set of necessary linker options (see Usage below)
@@ -39,18 +39,18 @@ Usage
 -----
 
 Use this as you would any other SCons extension: add it to the `tools` argument
-of Environment(), for example:
+of `Environment()`, for example:
 
     env = Environment(tools = ['default', 'matlab'])
 
-To compile a Mex source file, use the method Mex(), like so:
+To compile a Mex source file, use the method `Mex()`, like so:
 
     mex_ext = env.Mex("mex_ext", ["mex_ext.c"])
 
-Mex() takes care of adding necessary compiler options (e.g., `-fexception`) and
+`Mex()` takes care of adding necessary compiler options (e.g., `-fexception`) and
 linker options (e.g., `-lmx`).
 
-NOTE: Mex() intends to only do the minimal amount of necessary work, that is, it
+NOTE: `Mex()` intends to only do the minimal amount of necessary work, that is, it
 does not do things that are unnecessary for a minimal Mex file.  For instance,
 it links to the smallest possible set of libraries (i.e., mex and mx).
 Therefor, if you use Matlab libraries other than mx and mex, you need to link to
