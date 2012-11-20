@@ -52,7 +52,7 @@ def gen_matlab_env(env, **kwargs):
         return
 
     # invoke matlab and print required information
-    matlab_cmd = r"fprintf(1, '%s\n%s\n%s\n', mexext, matlabroot, computer, version); quit;"
+    matlab_cmd = r"fprintf(1, '%s\n%s\n%s\n', mexext, matlabroot, computer('arch'), version); quit;"
 
     cmd_line = ['matlab', '-nodesktop', '-nosplash']
 
@@ -91,9 +91,6 @@ def gen_matlab_env(env, **kwargs):
     matlab_root = lines[1]
     matlab_arch = lines[2].lower()
     matlab_ver, matlab_release  = lines[3].split()
-
-    if matlab_arch == 'pcwin':
-        matlab_arch = 'win32'
 
     env['MATLAB'] = {
         "MEX_EXT":  "." + lines[0],
