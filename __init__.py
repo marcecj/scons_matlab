@@ -161,9 +161,9 @@ def mex_builder(env, target, source, gen_def=False, **kwargs):
     # the need for mexversion.c was removed in Matlab version 7.9
     if env['MATLAB']['RELEASE'] < "R2009a":
 
-        mexversion = env.Clone()
         # give each Mex file its own mexversion object (prevents warnings
         # from SCons and makes sure the same compiler options are used)
+        mexversion = env.Clone()
 
         if os.name == 'nt':
             mexversion_obj = mexversion.RES("mexversion_" + target,
@@ -180,8 +180,7 @@ def mex_builder(env, target, source, gen_def=False, **kwargs):
                      CPPPATH    = [env['MATLAB']['INCLUDE']],
                      LIBPATH    = [env['MATLAB']['LIB_DIR']])
 
-    # add compile target: return the node object (or None, if only the deps are
-    # requested)
+    # add compile target: return the node object
     return env.SharedLibrary(target, source,
                              SHLIBPREFIX="",
                              SHLIBSUFFIX=env['MATLAB']['MEX_EXT'],
