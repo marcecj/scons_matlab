@@ -69,6 +69,14 @@ These are static per Matlab installation, and are cached via Python's `pickle`
 module.  If you change your Matlab installation, you can delete the file
 `.matlab_vars_cache` to update the information.
 
+Related Software
+----------------
+
+There is an alternative builder on the [SCons Wiki](http://www.scons.org/wiki/),
+called [MexBuilder](http://www.scons.org/wiki/MexBuilder).  The difference to
+this tool is mainly that it executes the mex program, while the `Mex()`
+pseudo-builder in this tool wraps the `SharedLibrary()` builder.
+
 License
 -------
 
