@@ -19,6 +19,11 @@ The `Mex()` pseudo-builder takes care of the following:
 - automatically adding `mexversion.c` (`mexversion.rc` on Windows) to the source
   file list (for older Matlab versions).
 
+Basically, it follows the guidelines in the section
+"[Custom Building
+MEX-Files](http://www.mathworks.de/de/help/matlab/matlab_external/custom-building-mex-files.html)"
+of the MATLAB documentation.
+
 Installation
 ------------
 
