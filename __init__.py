@@ -17,38 +17,38 @@ import sys
 import pickle
 
 # Windows only: catches Matlabs output, since you cannot print to stdout
-matlab_log_file = '.matlab_output'
+_matlab_log_file = '.matlab_output'
 
 # caches the Matlab variables
-vars_file = '.matlab_vars_cache'
+_vars_file = '.matlab_vars_cache'
 
-def load_matlab_vars(env):
+def _load_matlab_vars(env):
     """Load various Matlab specific variables from a cache file via the pickle
     module.
     """
 
-    with open( vars_file, 'r' ) as f:
+    with open( _vars_file, 'r' ) as f:
         p = pickle.Unpickler(f)
         env['MATLAB'] = p.load()
 
-def cache_matlab_vars(matlab_vars):
+def _cache_matlab_vars(matlab_vars):
     """Store various Matlab specific variables in a cache file via the pickle
     module.
     """
 
     # store the objects in a file
-    with open(vars_file, 'w') as f:
+    with open(_vars_file, 'w') as f:
         p = pickle.Pickler(f)
         p.dump(matlab_vars)
 
-def gen_matlab_env(env, **kwargs):
+def _gen_matlab_env(env, **kwargs):
     """Obtain various Matlab specific variables and put them in env['MATLAB'].
     """
 
-    if os.path.isfile(vars_file):
+    if os.path.isfile(_vars_file):
         if not env.GetOption('silent'):
             print "Loading Matlab vars from cache..."
-        load_matlab_vars(env)
+        _load_matlab_vars(env)
         return
 
     # invoke matlab and print required information
@@ -59,7 +59,7 @@ def gen_matlab_env(env, **kwargs):
     if os.name == "nt":
         cmd_line += ['-r', '"' + matlab_cmd + '"']
         # stop Matlab from forking and output to a log file
-        cmd_line += ['-wait', '-logfile', matlab_log_file]
+        cmd_line += ['-wait', '-logfile', _matlab_log_file]
 
     try:
         # open a Matlab subprocess that communicates over pipes
@@ -77,7 +77,7 @@ def gen_matlab_env(env, **kwargs):
         exit("Error calling Matlab, exiting.")
 
     if os.name == 'nt':
-        with open(matlab_log_file) as mlab_out:
+        with open(_matlab_log_file) as mlab_out:
             mlab_out = mlab_out.readlines()[-4::]
     else:
         # everything before the first input line can be ignored
@@ -108,9 +108,9 @@ def gen_matlab_env(env, **kwargs):
                 [os.sep.join([matlab_root, 'extern', 'lib', 'win32', 'microsoft'])]
 
     print "Caching Matlab vars..."
-    cache_matlab_vars(env['MATLAB'])
+    _cache_matlab_vars(env['MATLAB'])
 
-def mex_builder(env, target, source, gen_def=False, **kwargs):
+def _mex_builder(env, target, source, gen_def=False, **kwargs):
     """A Mex pseudo-builder for SCons that wraps the SharedLibrary builder.
 
        This pseudo-builder merely inserts some library dependencies, source file
@@ -182,12 +182,12 @@ def mex_builder(env, target, source, gen_def=False, **kwargs):
                              **kwargs)
 
 def generate(env, **kwargs):
-    gen_matlab_env(env, **kwargs)
+    _gen_matlab_env(env, **kwargs)
 
     # add the Mex pseudo-builder to the environment
     # NOTE: adding the function to $BUILDERS wraps it in a BuilderMethod object,
     # which gives it the calling conventions of regular builders.
-    env['BUILDERS']['Mex'] = mex_builder
+    env['BUILDERS']['Mex'] = _mex_builder
 
 def exists(env):
     # FIXME: Why is this function not called? Calling exit() here does nothing!
