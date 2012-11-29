@@ -53,6 +53,10 @@ that are unnecessary for a minimal Mex file.  For instance, it links to the
 smallest possible set of libraries (i.e., mex and mx).  Therefor, if you use
 Matlab libraries other than mx and mex, you need to link to them yourself.
 
+It is also important to know that this builder modifies the environment it is
+called from.  If this is undesirable, `Clone()`-ing the environment might be a
+suitable workaround.
+
 On first run, a Matlab instance must be started.  The tool then stores the
 following construction variables in `env['MATLAB']`:
 
