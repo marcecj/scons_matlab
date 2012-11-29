@@ -130,7 +130,7 @@ def mex_builder(env, target, source, gen_def=False, **kwargs):
         env.AppendUnique(LIBS = ["mex", "mx"])
 
     # OS dependent stuff, we assume GCC on Unix like platforms
-    if platform == "posix":
+    if platform in ("posix", "darwin"):
 
         # add "exceptions" option, without which any mex function that raises an
         # exception (e.g., mexErrMsgTxt()) causes Matlab to crash
@@ -150,8 +150,6 @@ def mex_builder(env, target, source, gen_def=False, **kwargs):
                                  "EXPORTS mexFunction"],
                          TEXTFILESUFFIX='.def')
 
-    elif platform == "darwin":
-        env.AppendUnique(CCFLAGS="-fexceptions -pthread")
     else:
         exit("Oops, not a supported platform.")
 
