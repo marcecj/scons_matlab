@@ -5,12 +5,11 @@ Marc Joliet <marcec@gmx.de>
 Introduction
 ------------
 
-This is an SCons extension (more precisely, a tool) for compiling Mex extensions
-and programs that call to the Matlab engine.  It adds a 'MATLAB' `dict` to your
-build systems env that contains potentially interesting information, e.g., you
-can get Matlabs library directory via `env["MATLAB"]["LIB_DIR"]`.  More
-importantly, it defines a `Mex()` pseudo-builder that wraps the `SharedLibrary`
-builder.
+This is an SCons tool for compiling Mex extensions and programs that call to the
+Matlab engine.  It adds a 'MATLAB' `dict` to your build systems env that
+contains potentially interesting information, e.g., you can get Matlabs library
+directory via `env["MATLAB"]["LIB_DIR"]`.  More importantly, it defines a
+`Mex()` pseudo-builder that wraps the `SharedLibrary` builder.
 
 The `Mex()` pseudo-builder takes care of the following:
 
