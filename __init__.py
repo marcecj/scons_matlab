@@ -190,7 +190,6 @@ def generate(env, **kwargs):
     env['BUILDERS']['Mex'] = _mex_builder
 
 def exists(env):
-    # FIXME: Why is this function not called? Calling exit() here does nothing!
     if not env.WhereIs("matlab"):
         return False
     return True
