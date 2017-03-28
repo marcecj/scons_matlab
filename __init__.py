@@ -52,7 +52,7 @@ def _gen_matlab_env(env, **kwargs):
         return
 
     # invoke matlab and print required information
-    matlab_cmd = r"fprintf(1, '%s\n%s\n%s\n%s\n', mexext, matlabroot, computer('arch'), version); quit;"
+    matlab_cmd = r"fprintf(1, '>>%s\n%s\n%s\n%s\n', mexext, matlabroot, computer('arch'), version); quit;"
 
     cmd_line = ['matlab', '-nodesktop', '-nosplash']
 
